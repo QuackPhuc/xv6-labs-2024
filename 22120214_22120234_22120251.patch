@@ -1,0 +1,122 @@
+From 68c7b78f9c772b8ff3dfe8e0bd3706159d786e43 Mon Sep 17 00:00:00 2001
+From: QuackPhuc <tannhathasagi28@gmail.com>
+Date: Sat, 19 Oct 2024 17:57:11 +0700
+Subject: [PATCH] lab1: pingpong and primes'
+
+---
+ Makefile        |  2 ++
+ user/pingpong.c | 28 ++++++++++++++++++++++++++
+ user/primes.c   | 52 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 82 insertions(+)
+ create mode 100644 user/pingpong.c
+ create mode 100644 user/primes.c
+
+diff --git a/Makefile b/Makefile
+index 74e454f..ae430bf 100644
+--- a/Makefile
++++ b/Makefile
+@@ -194,6 +194,8 @@ UPROGS=\
+ 	$U/_grind\
+ 	$U/_wc\
+ 	$U/_zombie\
++	$U/_pingpong\
++	$U/_primes\
+ 
+ 
+ 
+diff --git a/user/pingpong.c b/user/pingpong.c
+new file mode 100644
+index 0000000..cc488a5
+--- /dev/null
++++ b/user/pingpong.c
+@@ -0,0 +1,28 @@
++#include "kernel/types.h"
++#include "kernel/stat.h"
++#include "user/user.h"
++
++int main() {
++    int p[2];
++    pipe(p);
++
++    int buf = 1;
++    if (fork()) {
++        write(p[1], &buf, sizeof(int));
++        wait(0);
++
++	    int tmp;
++        read(p[0], &tmp, sizeof(int));
++        printf("%d: received pong\n", getpid());
++
++    } else {
++        int tmp;
++        read(p[0], &tmp, sizeof(int));
++        printf("%d: received ping\n", getpid());
++
++        write(p[1], &tmp, sizeof(int));
++    }
++    close(p[0]);
++    close(p[1]); 
++    exit(0);
++}
+\ No newline at end of file
+diff --git a/user/primes.c b/user/primes.c
+new file mode 100644
+index 0000000..37251b3
+--- /dev/null
++++ b/user/primes.c
+@@ -0,0 +1,52 @@
++#include "kernel/types.h"
++#include "kernel/stat.h"
++#include "user/user.h"
++
++void sieve(int p[]) __attribute__((noreturn));
++
++void sieve(int p[]) {
++    close(p[1]);
++    
++    int prime;
++    if (!read(p[0], &prime, sizeof(prime))) {
++        close(p[0]);
++        exit(0);
++    }
++
++    printf("prime %d\n", prime);
++
++    int rp[2];
++    pipe(rp);
++
++    if (!fork()) {
++        int num;
++
++        while (read(p[0], &num, sizeof(num)) != 0) {
++            if (num % prime != 0) {
++                write(rp[1], &num, sizeof(num));
++            }
++        }
++    } else {
++        close(p[0]);
++        sieve(rp);
++    }
++
++    exit(0);
++}
++
++int main() {
++    int p[2];
++    pipe(p);
++
++    int N = 280;
++    if (!fork()) {
++        for (int i = 2; i <= N; i++) {
++            write(p[1], &i, sizeof(i));
++        }
++        close(p[1]);
++        exit(0);
++    } else {
++        sieve(p);
++    }
++    exit(0);
++}
+-- 
+2.47.0.windows.1
+
