@@ -1,0 +1,43 @@
+Q: Looking at the backtrace output, which function called syscall?
+A: From the backtrace output in the image, the function usertrap (at kernel/trap.c:67) called the syscall function (at kernel/syscall.c:133).
+
+Q: What is the value of p->trapframe->a7 and what does that value represent? (Hint: look user/initcode.S, the first user program xv6 starts.)
+Q: Giá trị của p->trapframe->a7 là 0x1. 
+Giá trị này đại diện cho mã số của gọi hệ thống (system call number). Cụ thể, 0x1 tương ứng với gọi hệ thống SYS_fork, nghĩa là chương trình người dùng đầu tiên đang yêu cầu thực hiện gọi hệ thống fork.
+
+Q: What was the previous mode that the CPU was in?
+A: Khi chạy lệnh ta được kết quả sau:
+(gdp) p/x $sstatus
+$2 = 0x200000022
+
+Để kiểm tra bit 8 trong giá trị 0x200000022:
+1. Chuyển đổi 0x200000022 sang nhị phân:  
+   
+   0x200000022 = 0b10_0000_0000_0000_0000_0000_0000_0010_0010
+   
+2. Nhìn vào bit thứ 8 (đếm từ phải sang trái, bắt đầu từ 0):  
+   - Bit thứ 8 là 1.
+
+Do đó, chế độ trước đó của CPU là Supervisor mode (chế độ giám sát).
+
+Q: Write down the assembly instruction the kernel is panicing at. Which register corresponds to the variable num?
+A: thay num = p->trapframe->a7; thành num = * (int *) 0; Ta có:
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+scause=0xd sepc=0x80001c92 stval=0x0
+panic: kerneltrap
+
+Tìm trong file kernel.kernel.asm. Ta thấy:
+num = * (int *) 0;
+    80001c92:	00002683          	lw	a3,0(zero) # 0 <_entry-0x80000000>
+Vậy thanh ghi a3 tương ứng với biến num.
+
+Q: Why does the kernel crash?
+A: Trong quá trình ánh xạ địa chỉ ảo, địa chỉ 0 không được ánh xạ tới bất kỳ địa chỉ vật lý nào. Tất cả các địa chỉ mà chúng ta sử dụng trong chương trình đều là địa chỉ ảo. Vì vậy đương nhiên là không thể lấy được giá trị tương ứng với nó.
+
+Q: What is the name of the binary that was running when the kernel paniced? What is its process id (pid)?
+
+$1 = initcode\000\000\000\000\000\000\000".
+Ta có process id là 1.
