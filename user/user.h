@@ -41,7 +41,3 @@ void *memcpy(void *, const void *, uint);
 // umalloc.c
 void* malloc(uint);
 void free(void*);
-
-// Định nghĩa cấu trúc sysinfo trong sysinfo.h
-struct sysinfo;
-int sysinfo(struct sysinfo *);
