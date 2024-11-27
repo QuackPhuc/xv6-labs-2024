@@ -2,8 +2,8 @@ Q: Looking at the backtrace output, which function called syscall?
 A: Hàm usertrap (tại kernel/trap.c:67) đã gọi hàm syscall (tại kernel/syscall.c:133).
 
 Q: What is the value of p->trapframe->a7 and what does that value represent? (Hint: look user/initcode.S, the first user program xv6 starts.)
-Q: Giá trị của p->trapframe->a7 là 0x1. 
-Giá trị này đại diện cho mã số của gọi hệ thống (system call number). Cụ thể, 0x1 tương ứng với gọi hệ thống SYS_fork, nghĩa là chương trình người dùng đầu tiên đang yêu cầu thực hiện gọi hệ thống fork.
+Q: Giá trị của p->trapframe->a7 là 0x7. 
+Giá trị này đại diện cho mã số của gọi hệ thống (system call number). Cụ thể, 0x7 tương ứng với gọi hệ thống SYS_exec. 
 
 Q: What was the previous mode that the CPU was in?
 A: Khi chạy lệnh ta được kết quả sau:
